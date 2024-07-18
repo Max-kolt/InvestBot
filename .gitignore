@@ -1,0 +1,11 @@
+# created by virtualenv automatically
+lib
+bin
+media
+.idea
+.env
+InvestClub_db.db
+pyvenv.cfg
+Dockerfile
+docker-compose.yml
+**/__pycache__/
