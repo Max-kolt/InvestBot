@@ -6,6 +6,5 @@ media
 .env
 InvestClub_db.db
 pyvenv.cfg
-Dockerfile
 docker-compose.yml
 **/__pycache__/
