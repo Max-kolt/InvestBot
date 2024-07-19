@@ -4,6 +4,8 @@ from aiogram.types import Message, FSInputFile, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 import asyncio
 from loguru import logger
+
+from utils import main_keyboard
 from states import RegistrationForm
 from database import Investor
 
@@ -19,9 +21,9 @@ async def welcome(message: Message, state: FSMContext):
         "Я с удовольствием помогу вам приблизить свой бизнес к масштабированию, "
         "а так же дам самую необходимую вам информацию, "
         "чтобы вы точно смогли привлечь инвестиции в свой проект. "
-        "Давайте сперва познакомимся поближе?"
+        "Давайте сперва познакомимся поближе?", reply_markup=ReplyKeyboardRemove()
     )
-    await asyncio.sleep(4)
+    await asyncio.sleep(2)
 
     # if not Investor.select().where(Investor.login == message.from_user.username):
     #     Investor.create(login=message.from_user.username, chat_id=message.from_user.id)
@@ -31,9 +33,5 @@ async def welcome(message: Message, state: FSMContext):
     await state.set_state(RegistrationForm.name)
 
 
-@default_router.message(F.text == "Отменить")
-async def process_cancel(message: Message, state: FSMContext):
-    await state.clear()
 
-    await message.answer("""Начнем с самого начала начала.\nКак вас зовут?""", reply_markup=ReplyKeyboardRemove())
-    await state.set_state(RegistrationForm.name)
+

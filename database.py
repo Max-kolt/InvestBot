@@ -2,8 +2,8 @@ from peewee import *
 from datetime import date
 from config import DB_NAME, DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
 
-
-db = SqliteDatabase(F"{DB_NAME}.db")
+SqliteQ
+db =  SqliteDatabase(F"{DB_NAME}.db", re)
 
 
 class BaseModel(Model):
@@ -39,12 +39,9 @@ def main():
     tables = db.get_tables()
     count = len(tables)
     if count > 0:
-        print(F"В базе данных {count} таблиц: {tables}")
-        drop = input("После этой операции все таблицы с данными сотруться.\n"
-                     "Вы уверенны что хотите пересоздать базу данных?(y/N): ")
-        if drop != "y":
-            print("Операция отменена")
-            return
+        print(F"В базе данных {count} таблиц: {tables}. Удалите базу данных и потом запустите скрипт снова.")
+        return
+
     db.create_tables([Investor, TimeTable, ScheduleTime])
 
     for day in DEFAULT_WEEK_SCHEDULE:

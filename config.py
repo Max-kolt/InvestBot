@@ -20,4 +20,4 @@ DEFAULT_NECESSARY_ASSISTANCE = {
     "report": "Финансовый отчет за прошедший период"
 }
 
-ADMIN = 'runit_mak'
+ADMIN = -1002178066934

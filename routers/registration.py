@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, \
     KeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
@@ -10,8 +10,16 @@ import asyncio
 from config import DEFAULT_NECESSARY_ASSISTANCE
 from states import RegistrationForm
 from database import Investor
+from utils import send_to_admin
 
 registration_router = Router(name="Registration")
+
+
+@registration_router.message(F.text == "Отменить")
+async def process_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("""Начнем с самого начала начала.\nКак вас зовут?""", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(RegistrationForm.name)
 
 
 @registration_router.message(RegistrationForm.name)
@@ -81,7 +89,6 @@ async def process_document(message: Message, state: FSMContext):
     file_id = message.document.file_id
     await state.update_data(document=file_id)
     await state.set_state(RegistrationForm.necessary_assistance)
-    await message.delete()
     await message.answer(
         """Какая помощь в подготовке вам может потребоваться, выберите:""",
         reply_markup=InlineKeyboardMarkup(
@@ -101,27 +108,35 @@ async def process_document(message: Message, state: FSMContext):
 
 
 @registration_router.callback_query(RegistrationForm.necessary_assistance, F.data.startswith("assist_"))
-async def process_assistance(call: CallbackQuery, state: FSMContext):
-    assist_data = call.data.split('_')[1]
+async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
+    assist_data = call.data.split('_')[-1]
     await state.update_data(necessary_assistance=DEFAULT_NECESSARY_ASSISTANCE[assist_data])
     data = await state.get_data()
-    if Investor.select().where(Investor.login == call.from_user.username):
-        (Investor.delete().where(Investor.login == call.from_user.username)).execute()
-        logger.info(f"Delete old {call.from_user.username} info")
-
-    current_investor = Investor.create(name=data['name'], project_description=data["project_description"],
-                                       amount_of_income=data["amount_of_income"],
-                                       required_amount=data["required_amount"],
-                                       document=data["document"] if not data["document"] else "",
-                                       necessary_assistance=data["necessary_assistance"],
-                                       login=call.from_user.username, chat_id=call.from_user.id)
-    # print(current_investor)
+    # if Investor.select().where(Investor.login == call.from_user.username):
+    #     (Investor.delete().where(Investor.login == call.from_user.username)).execute()
+    #     logger.info(f"Delete old {call.from_user.username} info")
+    # Investor.create(**data, login=call.from_user.username, chat_id=call.from_user.id)
+    #     name=data['name'], project_description=data["project_description"],
+    #     amount_of_income=data["amount_of_income"],
+    #     required_amount=data["required_amount"],
+    #     document=data["document"] if not data["document"] else "",
+    #     necessary_assistance=data["necessary_assistance"],
+    #     login=call.from_user.username, chat_id=call.from_user.id
+    # )
 
     logger.info(f"User {call.from_user.username} registered")
+    await send_to_admin(
+        bot,
+        text=f"#{call.from_user.id} \nНовый пользователь: {call.from_user.username}\n"
+             f"Имя: {data['name']}\nОписание проекта: {data['project_description']}\n"
+             f"Размер выручки: {data['amount_of_income']}\nНеобходимо привлечь: {data['required_amount']}\n"
+             f"Требуемая помощь: {data['necessary_assistance']}",
+        document=data['document']
+    )
     await state.clear()
     await call.message.delete()
+    await call.message.answer("Мы рады что вы с нами, нам уже нравится ваш проект!", reply_markup=ReplyKeyboardRemove())
     await call.message.answer(
-        "Мы рады что вы с нами, нам уже нравится ваш проект! "
         "Предлагаю назначить всречу с учредителями Atlant Capital, "
         "чтобы обсудить детали дальнейшей работы по вашему проекту.",
         reply_markup=InlineKeyboardMarkup(
