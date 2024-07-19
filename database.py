@@ -2,8 +2,7 @@ from peewee import *
 from datetime import date
 from config import DB_NAME, DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
 
-SqliteQ
-db =  SqliteDatabase(F"{DB_NAME}.db", re)
+db = SqliteDatabase(F"{DB_NAME}.db")
 
 
 class BaseModel(Model):
