@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, \
     KeyboardButton, ReplyKeyboardRemove
@@ -9,7 +11,7 @@ from datetime import date
 
 from states import CallScheduleForm
 from utils import week_schedule_generate, send_to_admin, day_schedule_generate
-from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
+from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE, CHANNEL_LINK
 from database import ScheduleTime, Investor, TimeTable
 
 meet_selection_router = Router(name="MeetSelection")
@@ -79,3 +81,7 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
     logger.info(f"User {call.from_user.username} schedule meeting: {data['day']}, {data['day_time']}:00")
     await call.message.answer("Благодарю за запись. Накануне онлайн-встречи я пришлю вам ссылку на встречу. Следите "
                               "за уведомлениями!", reply_markup=ReplyKeyboardRemove())
+
+    await asyncio.sleep(3)
+    await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!"
+                              "Там ты найдешь и узнаешь много интересного о мире инвестиций!\n"+CHANNEL_LINK)
