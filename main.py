@@ -9,6 +9,7 @@ from database import db
 from routers import all_routers
 
 dp = Dispatcher()
+logger.add('app_logger.log', rotation="500 MB", compression="gz", level="DEBUG", diagnose=False, backtrace=False)
 
 
 async def main():
@@ -16,6 +17,7 @@ async def main():
     db.connect()
     dp.include_routers(*all_routers)
     logger.info("Bot has been started")
+
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
