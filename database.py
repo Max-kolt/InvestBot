@@ -1,8 +1,8 @@
 from peewee import *
 from datetime import date
-from config import DB_NAME, DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
+from config import DB_NAME, DB_USER, DB_USER_PASSWORD, DB_HOST, DB_PORT, DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
 
-db = SqliteDatabase(F"{DB_NAME}.db")
+db = PostgresqlDatabase(DB_NAME, user=DB_USER, password=DB_USER_PASSWORD, host=DB_HOST, port=DB_PORT)
 
 
 class BaseModel(Model):
@@ -13,13 +13,13 @@ class BaseModel(Model):
 class Investor(BaseModel):
     login = CharField(primary_key=True, max_length=60)
     chat_id = CharField()
-    name = TextField()
-    project_description = TextField()
-    amount_of_income = CharField(max_length=100)
-    required_amount = CharField(max_length=100)
+    name = TextField(null=True)
+    project_description = TextField(null=True)
+    amount_of_income = CharField(max_length=100, null=True)
+    required_amount = CharField(max_length=100, null=True)
     # amount_purpose = TextField(null=True)
-    document = TextField()
-    necessary_assistance = TextField()
+    document = TextField(null=True)
+    necessary_assistance = TextField(null=True)
 
 
 class TimeTable(BaseModel):

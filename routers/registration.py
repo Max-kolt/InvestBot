@@ -112,10 +112,10 @@ async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
     assist_data = call.data.split('_')[-1]
     await state.update_data(necessary_assistance=DEFAULT_NECESSARY_ASSISTANCE[assist_data])
     data = await state.get_data()
-    # if Investor.select().where(Investor.login == call.from_user.username):
-    #     (Investor.delete().where(Investor.login == call.from_user.username)).execute()
-    #     logger.info(f"Delete old {call.from_user.username} info")
-    # Investor.create(**data, login=call.from_user.username, chat_id=call.from_user.id)
+    if Investor.select().where(Investor.login == call.from_user.username):
+        (Investor.delete().where(Investor.login == call.from_user.username)).execute()
+        logger.info(f"Delete old {call.from_user.username} info")
+    Investor.create(**data, login=call.from_user.username, chat_id=call.from_user.id)
     #     name=data['name'], project_description=data["project_description"],
     #     amount_of_income=data["amount_of_income"],
     #     required_amount=data["required_amount"],

@@ -5,11 +5,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters import Filter
 from aiogram.methods.send_message import SendMessage
 from loguru import logger
+from datetime import date
 
 from states import CallScheduleForm
-from utils import week_schedule_generate, send_to_admin
-from config import DEFAULT_DAY_SCHEDULE
-
+from utils import week_schedule_generate, send_to_admin, day_schedule_generate
+from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
+from database import ScheduleTime, Investor, TimeTable
 
 meet_selection_router = Router(name="MeetSelection")
 
@@ -28,18 +29,21 @@ async def start_scheduling(call: CallbackQuery, state: FSMContext):
 
 @meet_selection_router.callback_query(CallScheduleForm.week_day, F.data.startswith("sched_day_"))
 async def process_day_schedule(call: CallbackQuery, state: FSMContext):
+    # investor = ScheduleTime.select(ScheduleTime, Investor).join(Investor)\
+    #     .where(Investor.chat_id == call.from_user.id).get()
     current_day = call.data.split("_")[-1]
-    await state.update_data(week_day=current_day)
+    await state.update_data(day=current_day)
     await state.set_state(CallScheduleForm.day_time)
     await call.message.delete()
-    await call.message.answer(text=current_day, reply_markup=ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
-        [KeyboardButton(text='Отмена')]
-    ]))
+    await call.message.answer(
+        text=current_day,
+        # reply_markup=ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[KeyboardButton(text='Отмена')]])
+    )
     await call.message.answer(
         "Выберите время",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=f"{hour}:00", callback_data=f"sched_hour_{hour}")]
-            for hour in DEFAULT_DAY_SCHEDULE
+            for hour in day_schedule_generate(current_day.split(".")[0])
         ])
     )
 
@@ -47,23 +51,31 @@ async def process_day_schedule(call: CallbackQuery, state: FSMContext):
 @meet_selection_router.callback_query(CallScheduleForm.day_time, F.text == "Отмена")
 async def process_cancel_schedule(message: Message, state: FSMContext):
     await state.clear()
-    await message.delete()
-    await message.delete()
     await message.answer(text='Запись отменена', reply_markup=ReplyKeyboardRemove())
 
 
 @meet_selection_router.callback_query(CallScheduleForm.day_time, F.data.startswith("sched_hour_"))
-async def process_hour_chedule(call: CallbackQuery, state: FSMContext, bot: Bot):
+async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot):
     current_hour = call.data.split('_')[-1]
     await state.update_data(day_time=current_hour)
+    await call.message.edit_text(current_hour + ":00")
     data = await state.get_data()
-    await send_to_admin(bot, text=f"#{call.from_user.id} \nПользователь {call.from_user.username} запланировал встречу на {data['week_day']} "
-                        f"в {data['day_time']}:00")
+    current_date = date(day=int(data['day'].split(".")[0]), month=int(data['day'].split('.')[1]),
+                        year=date.today().year)
+
+    time = TimeTable.select() \
+        .where(
+        TimeTable.week_day == DEFAULT_WEEK_SCHEDULE[current_date.weekday()]
+        and TimeTable.hours == data['day_time']
+    ).get()
+    investor = Investor.select().where(Investor.chat_id == call.from_user.id).get()
+
+    ScheduleTime.create(week_time=time, investor=investor, date=current_date)
+
+    await send_to_admin(bot,
+                        text=f"#{call.from_user.id} \nПользователь {call.from_user.username} запланировал встречу на {data['day']} "
+                             f"в {data['day_time']}:00")
     await state.clear()
-    logger.info(f"User {call.from_user.username} schedule meeting: {data['week_day']}, {data['day_time']}:00")
+    logger.info(f"User {call.from_user.username} schedule meeting: {data['day']}, {data['day_time']}:00")
     await call.message.answer("Благодарю за запись. Накануне онлайн-встречи я пришлю вам ссылку на встречу. Следите "
-                              "за уведомлениями!")
-
-
-
-
+                              "за уведомлениями!", reply_markup=ReplyKeyboardRemove())

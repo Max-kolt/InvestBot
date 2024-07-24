@@ -25,8 +25,8 @@ async def welcome(message: Message, state: FSMContext):
     )
     await asyncio.sleep(2)
 
-    # if not Investor.select().where(Investor.login == message.from_user.username):
-    #     Investor.create(login=message.from_user.username, chat_id=message.from_user.id)
+    if not Investor.select().where(Investor.login == message.from_user.username):
+        Investor.create(login=message.from_user.username, chat_id=message.from_user.id)
 
     logger.info(f"User {message.from_user.username} start registration")
     await message.answer("""Как вас зовут?""")
