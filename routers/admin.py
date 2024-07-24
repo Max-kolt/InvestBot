@@ -33,6 +33,8 @@ async def admin_process_send_all(message: Message, state: FSMContext):
             logger.exception(f"Can't send post to {user.chat_id}")
         except Exception as e:
             logger.exception(f"Can't send post to {user.chat_id}: {e}")
+    logger.info("Finishing posting to all bot users")
+    await state.clear()
 
 
 @admin_router.message()
