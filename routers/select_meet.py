@@ -2,16 +2,17 @@ import asyncio
 
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, \
-    KeyboardButton, ReplyKeyboardRemove
+    KeyboardButton, ReplyKeyboardRemove, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Filter
 from aiogram.methods.send_message import SendMessage
+from aiogram.exceptions import TelegramNotFound
 from loguru import logger
 from datetime import date
 
 from states import CallScheduleForm
 from utils import week_schedule_generate, send_to_admin, day_schedule_generate
-from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE, CHANNEL_LINK
+from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE, CHANNEL_LINK, CHANNEL_NAME
 from database import ScheduleTime, Investor, TimeTable
 
 meet_selection_router = Router(name="MeetSelection")
@@ -83,5 +84,30 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
                               "за уведомлениями!", reply_markup=ReplyKeyboardRemove())
 
     await asyncio.sleep(3)
-    await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!"
-                              "Там ты найдешь и узнаешь много интересного о мире инвестиций!\n"+CHANNEL_LINK)
+    await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!\n"
+                              "Там ты узнаешь:\n"
+                              "💫как не совершать ошибки при привлечении инвестиций, \n"
+                              "💫как масшибироваться легко, \n"
+                              "💫как общаться с инвесторами и многое другое \n\n"
+                              "В подарок за подписку тебя ждёт чек-лист, который поможет "
+                              "тебе на 70% быстрее привлечь инвестиции. \n\n"+CHANNEL_LINK,
+                              reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                  [InlineKeyboardButton(text="Получить подарок", callback_data='get_gift')]
+                              ])
+                              )
+
+
+@meet_selection_router.callback_query(F.data == 'get_gift')
+async def process_gift(call: CallbackQuery, bot: Bot):
+    try:
+        await bot.get_chat_member(CHANNEL_NAME, call.from_user.id)
+    except TelegramNotFound as n:
+        await call.message.answer("Вас не обнаружили в списке подписчиков канала, "
+                                  "проверьте вашу подписку и попробуйте еще раз.")
+        logger.exception(n.message)
+        return
+    except Exception as e:
+        await call.message.answer('Ошибка сервера, уведомление отправлено администратору.\nПовторите попытку позже.')
+        return e
+
+    await call.message.answer_document(document=FSInputFile('static/check-list.pdf'), caption="Держите ваш подарок 🎁")

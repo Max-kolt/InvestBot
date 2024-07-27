@@ -29,4 +29,5 @@ DEFAULT_NECESSARY_ASSISTANCE = {
 # ADMIN = -4252150781
 ADMIN = -1002178066934
 
-CHANNEL_LINK = "https://t.me/atlantcapital_free"
+CHANNEL_NAME = "atlantcapital_free"
+CHANNEL_LINK = f"https://t.me/{CHANNEL_NAME}"
