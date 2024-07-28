@@ -20,7 +20,7 @@ gift_router = Router(name='Gift')
 @gift_router.callback_query(F.data == 'get_gift')
 async def process_gift(call: CallbackQuery, bot: Bot):
     try:
-        await bot.get_chat_member(CHANNEL_NAME, call.from_user.id)
+        await bot.get_chat_member("@"+CHANNEL_NAME, call.from_user.id)
     except TelegramNotFound as n:
         await call.message.answer("Вас не обнаружили в списке подписчиков канала, "
                                   "проверьте вашу подписку и попробуйте еще раз.")
@@ -29,5 +29,6 @@ async def process_gift(call: CallbackQuery, bot: Bot):
     except Exception as e:
         await call.message.answer('Ошибка сервера, уведомление отправлено администратору.\nПовторите попытку позже.')
         logger.exception(e)
+        return
 
     await call.message.answer_document(document=FSInputFile('static/check-list.pdf'), caption="Держите ваш подарок 🎁")

@@ -8,3 +8,4 @@ InvestClub_db.db
 pyvenv.cfg
 docker-compose.yml
 **/__pycache__/
+app_logger.log
