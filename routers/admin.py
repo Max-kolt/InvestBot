@@ -38,7 +38,6 @@ async def admin_process_send_all(message: Message, state: FSMContext):
     await message.answer('Рассылка прошла успешно')
 
 
-
 @admin_router.message()
 async def admin_feedback(message: Message, bot: Bot):
     if not message.reply_to_message:

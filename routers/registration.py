@@ -10,7 +10,7 @@ import asyncio
 from config import DEFAULT_NECESSARY_ASSISTANCE
 from states import RegistrationForm
 from database import Investor
-from utils import send_to_admin
+from utils import send_to_admin, main_keyboard
 
 registration_router = Router(name="Registration")
 
@@ -20,6 +20,13 @@ async def process_cancel(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("""Начнем с самого начала начала.\nКак вас зовут?""", reply_markup=ReplyKeyboardRemove())
     await state.set_state(RegistrationForm.name)
+
+
+@registration_router.message(F.text == "Заново зарегистрироваться")
+async def new_registration(message: Message, state: FSMContext):
+    await state.set_state(RegistrationForm.name)
+    await message.answer("""Как вас зовут?""")
+    logger.info(f"User {message.from_user.username} start new registration")
 
 
 @registration_router.message(RegistrationForm.name)
@@ -135,7 +142,7 @@ async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
     )
     await state.clear()
     await call.message.delete()
-    await call.message.answer("Мы рады что вы с нами, нам уже нравится ваш проект!", reply_markup=ReplyKeyboardRemove())
+    await call.message.answer("Мы рады что вы с нами, нам уже нравится ваш проект!")
     await call.message.answer(
         "Предлагаю назначить всречу с учредителями Atlant Capital, "
         "чтобы обсудить детали дальнейшей работы по вашему проекту.",

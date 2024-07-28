@@ -1,6 +1,7 @@
 from aiogram import Router, F
-from aiogram.filters import CommandStart
-from aiogram.types import Message, FSInputFile, ReplyKeyboardRemove
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message, FSInputFile, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton,\
+    ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 import asyncio
 from loguru import logger
@@ -27,11 +28,19 @@ async def welcome(message: Message, state: FSMContext):
 
     if not Investor.select().where(Investor.login == message.from_user.username):
         Investor.create(login=message.from_user.username, chat_id=message.from_user.id)
+    else:
+        await message.answer("Вы уже прошли начальную регистрацию.\nХотите зарегистрироваться заново?",
+                             reply_markup=ReplyKeyboardMarkup(keyboard=[
+                                 [KeyboardButton(text='Заново зарегистрироваться')]
+                             ], resize_keyboard=True))
+        return
 
     logger.info(f"User {message.from_user.username} start registration")
     await message.answer("""Как вас зовут?""")
     await state.set_state(RegistrationForm.name)
 
 
-
+# @default_router.message(Command('main_menu'))
+# async def main_menu(message: Message):
+#     await message.answer(text="Главное меню", reply_markup=main_keyboard)
 

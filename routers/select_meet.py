@@ -18,11 +18,16 @@ from database import ScheduleTime, Investor, TimeTable
 meet_selection_router = Router(name="MeetSelection")
 
 
+# @meet_selection_router.message(F.text=='Записаться на встречу')
+# async def start_scheduling(message: Message, state: FSMContext):
+#     if ScheduleTime.select(Investor).join(Investor).where(ScheduleTime.investor.chat_id == message.from_user.id):
+
+
 @meet_selection_router.callback_query(F.data == "select_meet_time")
 async def start_scheduling(call: CallbackQuery, state: FSMContext):
     await state.set_state(CallScheduleForm.week_day)
     await call.message.answer(
-        'Выберите день',
+        '🗓Выберите день встречи',
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=day, callback_data=f"sched_day_{day}")]
             for day in week_schedule_generate()
@@ -39,11 +44,11 @@ async def process_day_schedule(call: CallbackQuery, state: FSMContext):
     await state.set_state(CallScheduleForm.day_time)
     await call.message.delete()
     await call.message.answer(
-        text=current_day,
+        text="🗓 "+current_day,
         # reply_markup=ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[KeyboardButton(text='Отмена')]])
     )
     await call.message.answer(
-        "Выберите время",
+        "⏰Выберите время",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=f"{hour}:00", callback_data=f"sched_hour_{hour}")]
             for hour in day_schedule_generate(current_day.split(".")[0])
@@ -61,7 +66,7 @@ async def process_cancel_schedule(message: Message, state: FSMContext):
 async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot):
     current_hour = call.data.split('_')[-1]
     await state.update_data(day_time=current_hour)
-    await call.message.edit_text(current_hour + ":00")
+    await call.message.edit_text("⏰ "+current_hour + ":00")
     data = await state.get_data()
     current_date = date(day=int(data['day'].split(".")[0]), month=int(data['day'].split('.')[1]),
                         year=date.today().year)
@@ -92,22 +97,7 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
                               "В подарок за подписку тебя ждёт чек-лист, который поможет "
                               "тебе на 70% быстрее привлечь инвестиции. \n\n"+CHANNEL_LINK,
                               reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                                  [InlineKeyboardButton(text="Получить подарок", callback_data='get_gift')]
+                                  [InlineKeyboardButton(text="Получить подарок", callback_data="get_gift")]
                               ])
                               )
 
-
-@meet_selection_router.callback_query(F.data == 'get_gift')
-async def process_gift(call: CallbackQuery, bot: Bot):
-    try:
-        await bot.get_chat_member(CHANNEL_NAME, call.from_user.id)
-    except TelegramNotFound as n:
-        await call.message.answer("Вас не обнаружили в списке подписчиков канала, "
-                                  "проверьте вашу подписку и попробуйте еще раз.")
-        logger.exception(n.message)
-        return
-    except Exception as e:
-        await call.message.answer('Ошибка сервера, уведомление отправлено администратору.\nПовторите попытку позже.')
-        return e
-
-    await call.message.answer_document(document=FSInputFile('static/check-list.pdf'), caption="Держите ваш подарок 🎁")

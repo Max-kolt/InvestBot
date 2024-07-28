@@ -30,7 +30,7 @@ class TimeTable(BaseModel):
 class ScheduleTime(BaseModel):
     week_time = ForeignKeyField(TimeTable, backref="scheduled")
     date = DateField()
-    investor = ForeignKeyField(Investor, backref="scheduled_meet")
+    investor = ForeignKeyField(Investor, backref="scheduled_meet", on_delete="CASCADE")
 
 
 def main():
@@ -50,3 +50,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
