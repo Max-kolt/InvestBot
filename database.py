@@ -1,8 +1,10 @@
 from peewee import *
+from playhouse.migrate import PostgresqlMigrator, migrate
 from datetime import date
 from config import DB_NAME, DB_USER, DB_USER_PASSWORD, DB_HOST, DB_PORT, DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE
 
 db = PostgresqlDatabase(DB_NAME, user=DB_USER, password=DB_USER_PASSWORD, host=DB_HOST, port=DB_PORT)
+migrator = PostgresqlMigrator(db)
 
 
 class BaseModel(Model):
@@ -20,6 +22,7 @@ class Investor(BaseModel):
     # amount_purpose = TextField(null=True)
     document = TextField(null=True)
     necessary_assistance = TextField(null=True)
+    get_gift = BooleanField(null=True)
 
 
 class TimeTable(BaseModel):
@@ -37,9 +40,9 @@ def main():
     db.connect()
     tables = db.get_tables()
     count = len(tables)
-    if count > 0:
-        print(F"В базе данных {count} таблиц: {tables}. Удалите базу данных и потом запустите скрипт снова.")
-        return
+    # if count > 0:
+    #     print(F"В базе данных {count} таблиц: {tables}. Удалите базу данных и потом запустите скрипт снова.")
+    #     return
 
     db.create_tables([Investor, TimeTable, ScheduleTime])
 
@@ -49,5 +52,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    migrate(
+        migrator.add_column(Investor._meta.table_name, "get_gift", BooleanField(null=True))
+    )
 

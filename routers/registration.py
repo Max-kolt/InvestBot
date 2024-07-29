@@ -18,8 +18,7 @@ registration_router = Router(name="Registration")
 @registration_router.message(F.text == "Отменить")
 async def process_cancel(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("""Начнем с самого начала начала.\nКак вас зовут?""", reply_markup=ReplyKeyboardRemove())
-    await state.set_state(RegistrationForm.name)
+    await message.answer("""Отменено""", reply_markup=main_keyboard)
 
 
 @registration_router.message(F.text == "Заново зарегистрироваться")
@@ -142,7 +141,7 @@ async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
     )
     await state.clear()
     await call.message.delete()
-    await call.message.answer("Мы рады что вы с нами, нам уже нравится ваш проект!")
+    await call.message.answer("Мы рады что вы с нами, нам уже нравится ваш проект!", reply_markup=main_keyboard)
     await call.message.answer(
         "Предлагаю назначить всречу с учредителями Atlant Capital, "
         "чтобы обсудить детали дальнейшей работы по вашему проекту.",

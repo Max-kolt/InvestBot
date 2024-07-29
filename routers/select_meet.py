@@ -11,7 +11,7 @@ from loguru import logger
 from datetime import date
 
 from states import CallScheduleForm
-from utils import week_schedule_generate, send_to_admin, day_schedule_generate
+from utils import week_schedule_generate, send_to_admin, day_schedule_generate, main_keyboard
 from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE, CHANNEL_LINK, CHANNEL_NAME
 from database import ScheduleTime, Investor, TimeTable
 
@@ -21,6 +21,18 @@ meet_selection_router = Router(name="MeetSelection")
 # @meet_selection_router.message(F.text=='Записаться на встречу')
 # async def start_scheduling(message: Message, state: FSMContext):
 #     if ScheduleTime.select(Investor).join(Investor).where(ScheduleTime.investor.chat_id == message.from_user.id):
+
+
+@meet_selection_router.message(F.text == "Записаться на встречу")
+async def start_scheduling(message: Message, state: FSMContext):
+    await state.set_state(CallScheduleForm.week_day)
+    await message.answer(
+        '🗓Выберите день встречи',
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=day, callback_data=f"sched_day_{day}")]
+            for day in week_schedule_generate()
+        ])
+    )
 
 
 @meet_selection_router.callback_query(F.data == "select_meet_time")
@@ -56,7 +68,7 @@ async def process_day_schedule(call: CallbackQuery, state: FSMContext):
     )
 
 
-@meet_selection_router.callback_query(CallScheduleForm.day_time, F.text == "Отмена")
+@meet_selection_router.message(CallScheduleForm.day_time, F.text == "Отмена")
 async def process_cancel_schedule(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(text='Запись отменена', reply_markup=ReplyKeyboardRemove())
@@ -86,18 +98,19 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
     await state.clear()
     logger.info(f"User {call.from_user.username} schedule meeting: {data['day']}, {data['day_time']}:00")
     await call.message.answer("Благодарю за запись. Накануне онлайн-встречи я пришлю вам ссылку на встречу. Следите "
-                              "за уведомлениями!", reply_markup=ReplyKeyboardRemove())
+                              "за уведомлениями!", reply_markup=main_keyboard)
 
-    await asyncio.sleep(3)
-    await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!\n"
-                              "Там ты узнаешь:\n"
-                              "💫как не совершать ошибки при привлечении инвестиций, \n"
-                              "💫как масшибироваться легко, \n"
-                              "💫как общаться с инвесторами и многое другое \n\n"
-                              "В подарок за подписку тебя ждёт чек-лист, который поможет "
-                              "тебе на 70% быстрее привлечь инвестиции. \n\n"+CHANNEL_LINK,
-                              reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                                  [InlineKeyboardButton(text="Получить подарок", callback_data="get_gift")]
-                              ])
-                              )
+    if not Investor.select(Investor).where(Investor.get_gift == 1, Investor.chat_id == call.from_user.id):
+        await asyncio.sleep(3)
+        await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!\n"
+                                  "Там ты узнаешь:\n"
+                                  "💫как не совершать ошибки при привлечении инвестиций, \n"
+                                  "💫как масшибироваться легко, \n"
+                                  "💫как общаться с инвесторами и многое другое \n\n"
+                                  "В подарок за подписку тебя ждёт чек-лист, который поможет "
+                                  "тебе на 70% быстрее привлечь инвестиции. \n\n"+CHANNEL_LINK,
+                                  reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                      [InlineKeyboardButton(text="Получить подарок", callback_data="get_gift")]
+                                  ])
+                                  )
 
