@@ -39,5 +39,5 @@ async def process_gift(call: CallbackQuery, bot: Bot):
         await call.message.answer('Ошибка сервера, уведомление отправлено администратору.\nПовторите попытку позже.')
         logger.exception(e)
         return
-
+    (Investor.update({Investor.get_gift: True}).where(Investor.chat_id == str(call.from_user.id))).execute()
     await call.message.answer_document(document=FSInputFile('static/check-list.pdf'), caption="Держите ваш подарок 🎁")
