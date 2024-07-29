@@ -100,7 +100,7 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
     await call.message.answer("Благодарю за запись. Накануне онлайн-встречи я пришлю вам ссылку на встречу. Следите "
                               "за уведомлениями!", reply_markup=main_keyboard)
 
-    if not Investor.select(Investor).where(Investor.get_gift == True, Investor.chat_id == call.from_user.id):
+    if not Investor.select().where(Investor.get_gift == True, Investor.chat_id == call.from_user.id):
         await asyncio.sleep(3)
         await call.message.answer("А пока мы готовимся к встрече предлагаю подписаться на наш канал!\n"
                                   "Там ты узнаешь:\n"
