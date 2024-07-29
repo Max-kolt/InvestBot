@@ -32,7 +32,7 @@ async def welcome(message: Message, state: FSMContext):
         await message.answer("Вы уже прошли начальную регистрацию.\nХотите зарегистрироваться заново?",
                              reply_markup=ReplyKeyboardMarkup(keyboard=[
                                  [KeyboardButton(text='Заново зарегистрироваться')],
-                                 [KeyboardButton(text="Отмена")]
+                                 [KeyboardButton(text="Отменить")]
                              ], resize_keyboard=True))
         return
 
