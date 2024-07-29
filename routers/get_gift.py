@@ -11,7 +11,7 @@ gift_router = Router(name='Gift')
 
 @gift_router.message(F.text == "Получить подарок")
 async def get_gift(message: Message):
-    if Investor.select().where(Investor.get_gift & Investor.chat_id == message.from_user.id):
+    if Investor.select().where(Investor.get_gift, Investor.chat_id == str(message.from_user.id)):
         await message.answer(text="Вы уже получили подарок.")
         return
 
