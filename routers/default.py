@@ -15,6 +15,9 @@ default_router = Router(name="Default")
 
 @default_router.message(CommandStart())
 async def welcome(message: Message, state: FSMContext):
+    print(message.text)
+    utm_metka = message.text.split(" ")[-1] if message.text != "/start" else "other"
+
     await message.answer_photo(
         photo=FSInputFile("static/Icon.jpg"),
         caption=
@@ -27,7 +30,7 @@ async def welcome(message: Message, state: FSMContext):
     await asyncio.sleep(2)
 
     if not Investor.select().where(Investor.login == message.from_user.username):
-        Investor.create(login=message.from_user.username, chat_id=message.from_user.id)
+        Investor.create(login=message.from_user.username, chat_id=message.from_user.id, utm_metka=utm_metka)
     else:
         await message.answer("Вы уже прошли начальную регистрацию.\nХотите зарегистрироваться заново?",
                              reply_markup=ReplyKeyboardMarkup(keyboard=[
@@ -41,7 +44,7 @@ async def welcome(message: Message, state: FSMContext):
     await state.set_state(RegistrationForm.name)
 
 
-# @default_router.message(Command('main_menu'))
-# async def main_menu(message: Message):
-#     await message.answer(text="Главное меню", reply_markup=main_keyboard)
+@default_router.message(Command('main_menu'))
+async def main_menu(message: Message):
+    await message.answer(text="Главное меню", reply_markup=main_keyboard)
 

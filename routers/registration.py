@@ -118,23 +118,24 @@ async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
     assist_data = call.data.split('_')[-1]
     await state.update_data(necessary_assistance=DEFAULT_NECESSARY_ASSISTANCE[assist_data])
     data = await state.get_data()
-    if Investor.select().where(Investor.login == call.from_user.username):
-        (Investor.delete().where(Investor.login == call.from_user.username)).execute()
-        logger.info(f"Delete old {call.from_user.username} info")
-    Investor.create(**data, login=call.from_user.username, chat_id=call.from_user.id)
-    #     name=data['name'], project_description=data["project_description"],
-    #     amount_of_income=data["amount_of_income"],
-    #     required_amount=data["required_amount"],
-    #     document=data["document"] if not data["document"] else "",
-    #     necessary_assistance=data["necessary_assistance"],
-    #     login=call.from_user.username, chat_id=call.from_user.id
-    # )
+
+    (Investor.update({
+        'name': data['name'], 'project_description': data["project_description"],
+        'amount_of_income': data["amount_of_income"],
+        'required_amount': data["required_amount"],
+        'document': data["document"] if not data["document"] else "",
+        'necessary_assistance': data["necessary_assistance"]}
+    ).where(Investor.chat_id == call.from_user.id)).execute()
+
+    investor_metka = Investor.select(Investor).where(Investor.chat_id == call.from_user.id).get().utm_metka
+    print(investor_metka)
 
     logger.info(f"User {call.from_user.username} registered")
     await send_to_admin(
         bot,
         text=f"#{call.from_user.id} \nНовый пользователь: {call.from_user.username}\n"
-             f"Имя: {data['name']}\nОписание проекта: {data['project_description']}\n"
+             f"Из паблика: {investor_metka}"
+             f"\nИмя: {data['name']}\nОписание проекта: {data['project_description']}\n"
              f"Размер выручки: {data['amount_of_income']}\nНеобходимо привлечь: {data['required_amount']}\n"
              f"Требуемая помощь: {data['necessary_assistance']}",
         document=data['document']

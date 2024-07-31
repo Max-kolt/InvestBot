@@ -23,6 +23,7 @@ class Investor(BaseModel):
     document = TextField(null=True)
     necessary_assistance = TextField(null=True)
     get_gift = BooleanField(null=True)
+    utm_metka = CharField()
 
 
 class TimeTable(BaseModel):
@@ -53,6 +54,6 @@ def main():
 
 if __name__ == '__main__':
     migrate(
-        migrator.add_column(Investor._meta.table_name, "get_gift", BooleanField(null=True))
+        migrator.add_column(Investor._meta.table_name, "utm_metka", CharField(default='other'))
     )
 
