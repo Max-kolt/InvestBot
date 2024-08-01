@@ -134,7 +134,7 @@ async def process_assistance(call: CallbackQuery, state: FSMContext, bot: Bot):
     await send_to_admin(
         bot,
         text=f"#{call.from_user.id} \nНовый пользователь: {call.from_user.username}\n"
-             f"Из паблика: {investor_metka}"
+             f"По метке: {investor_metka}"
              f"\nИмя: {data['name']}\nОписание проекта: {data['project_description']}\n"
              f"Размер выручки: {data['amount_of_income']}\nНеобходимо привлечь: {data['required_amount']}\n"
              f"Требуемая помощь: {data['necessary_assistance']}",

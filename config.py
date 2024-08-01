@@ -26,7 +26,7 @@ DEFAULT_NECESSARY_ASSISTANCE = {
     "report": "Финансовый отчет за прошедший период"
 }
 
-ADMIN = os.getenv('ADMIN_CHAT_ID')
+ADMIN = -4252150781
 
 CHANNEL_NAME = "atlantcapital_free"
 CHANNEL_LINK = f"https://t.me/{CHANNEL_NAME}"
