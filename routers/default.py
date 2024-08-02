@@ -32,6 +32,7 @@ async def welcome(message: Message, state: FSMContext):
     if not Investor.select().where(Investor.login == message.from_user.username):
         Investor.create(login=message.from_user.username, chat_id=message.from_user.id, utm_metka=utm_metka)
     else:
+        (Investor.update({'available': True}).where(Investor.chat_id == message.from_user.id)).execute()
         await message.answer("Вы уже прошли начальную регистрацию.\nХотите зарегистрироваться заново?",
                              reply_markup=ReplyKeyboardMarkup(keyboard=[
                                  [KeyboardButton(text='Заново зарегистрироваться')],

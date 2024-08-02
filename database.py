@@ -24,6 +24,7 @@ class Investor(BaseModel):
     necessary_assistance = TextField(null=True)
     get_gift = BooleanField(null=True)
     utm_metka = CharField()
+    available = BooleanField(default='True')
 
 
 class TimeTable(BaseModel):
@@ -54,6 +55,6 @@ def main():
 
 if __name__ == '__main__':
     migrate(
-        migrator.add_column(Investor._meta.table_name, "utm_metka", CharField(default='other'))
+        migrator.add_column(Investor._meta.table_name, "available", BooleanField(default='True'))
     )
 

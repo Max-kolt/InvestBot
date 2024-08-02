@@ -26,7 +26,8 @@ DEFAULT_NECESSARY_ASSISTANCE = {
     "report": "Финансовый отчет за прошедший период"
 }
 
-ADMIN = -4252150781
+# ADMIN = -4252150781
+ADMIN = -1002178066934
 
 CHANNEL_NAME = "atlantcapital_free"
 CHANNEL_LINK = f"https://t.me/{CHANNEL_NAME}"

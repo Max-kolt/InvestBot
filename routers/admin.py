@@ -1,7 +1,7 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message
 from aiogram.filters import Command
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.fsm.context import FSMContext
 from loguru import logger
 
@@ -29,7 +29,7 @@ async def admin_process_send_all(message: Message, state: FSMContext):
     for user in users:
         try:
             await message.copy_to(user.chat_id)
-        except TelegramBadRequest:
+        except TelegramForbiddenError:
             logger.exception(f"Can't send post to {user.chat_id}")
         except Exception as e:
             logger.exception(f"Can't send post to {user.chat_id}: {e}")
@@ -50,8 +50,12 @@ async def admin_feedback(message: Message, bot: Bot):
         else:
             logger.exception(f"Can't filter message with id: {message.message_id}")
             return
-
-        await send_to_user(bot=bot, user_id=user_id, text=message.text)
-        await message.answer(text=f"Ответ по id {user_id} отправлен")
-        logger.info(f"Sending feedback to {user_id}")
+        try:
+            await send_to_user(bot=bot, user_id=user_id, text=message.text)
+            await message.answer(text=f"Ответ по id {user_id} отправлен")
+            logger.info(f"Sending feedback to {user_id}")
+        except TelegramForbiddenError:
+            await message.answer(text="Пользователь больше не доступен")
+            logger.error(f"User with id {user_id} not available")
+            (Investor.update({'available': False}).where(Investor.chat_id == user_id)).execute()
 
