@@ -30,7 +30,8 @@ async def admin_process_send_all(message: Message, state: FSMContext):
         try:
             await message.copy_to(user.chat_id)
         except TelegramForbiddenError:
-            logger.exception(f"Can't send post to {user.chat_id}")
+            logger.exception(f"Can't send post to {user.chat_id}. Not available")
+            (Investor.update({'available': False}).where(Investor.chat_id == user.chat_id)).execute()
         except Exception as e:
             logger.exception(f"Can't send post to {user.chat_id}: {e}")
     logger.info("Finishing posting to all bot users")
