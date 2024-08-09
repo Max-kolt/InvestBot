@@ -25,6 +25,7 @@ class Investor(BaseModel):
     get_gift = BooleanField(null=True)
     utm_metka = CharField()
     available = BooleanField(default='True')
+    # created_at = TimestampField(default=)
 
 
 class TimeTable(BaseModel):
@@ -51,6 +52,8 @@ def main():
     for day in DEFAULT_WEEK_SCHEDULE:
         for hour in DEFAULT_DAY_SCHEDULE:
             TimeTable.create(week_day=day, hours=hour)
+
+    db.close()
 
 
 if __name__ == '__main__':

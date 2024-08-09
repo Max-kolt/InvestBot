@@ -10,7 +10,7 @@ import asyncio
 from config import DEFAULT_NECESSARY_ASSISTANCE
 from states import RegistrationForm
 from database import Investor
-from utils import send_to_admin, main_keyboard
+from utils import send_to_admin, main_keyboard, start_keyboard
 
 registration_router = Router(name="Registration")
 
@@ -18,10 +18,14 @@ registration_router = Router(name="Registration")
 @registration_router.message(F.text == "Отменить")
 async def process_cancel(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("""Отменено""", reply_markup=main_keyboard)
+    # if Investor.select().where(Investor.chat_id == message.from_user.id & Investor.project_description is not None):
+    #     await message.answer("""Отменено""", reply_markup=main_keyboard)
+    #     return
+    await message.answer("""Отменено""", reply_markup=start_keyboard)
 
 
-@registration_router.message(F.text == "Заново зарегистрироваться")
+# @registration_router.message(F.text == "Заново зарегистрироваться")
+@registration_router.message(F.text == "Записаться на консультацию")
 async def new_registration(message: Message, state: FSMContext):
     await state.set_state(RegistrationForm.name)
     await message.answer("""Как вас зовут?""")

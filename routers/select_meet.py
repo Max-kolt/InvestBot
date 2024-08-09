@@ -11,7 +11,7 @@ from loguru import logger
 from datetime import date
 
 from states import CallScheduleForm
-from utils import week_schedule_generate, send_to_admin, day_schedule_generate, main_keyboard
+from utils import week_schedule_generate, send_to_admin, day_schedule_generate, main_keyboard, start_keyboard
 from config import DEFAULT_DAY_SCHEDULE, DEFAULT_WEEK_SCHEDULE, CHANNEL_LINK, CHANNEL_NAME
 from database import ScheduleTime, Investor, TimeTable
 
@@ -98,7 +98,7 @@ async def process_hour_schedule(call: CallbackQuery, state: FSMContext, bot: Bot
     await state.clear()
     logger.info(f"User {call.from_user.username} schedule meeting: {data['day']}, {data['day_time']}:00")
     await call.message.answer("Благодарю за запись. Накануне онлайн-встречи я пришлю вам ссылку на встречу. Следите "
-                              "за уведомлениями!", reply_markup=main_keyboard)
+                              "за уведомлениями!", reply_markup=start_keyboard)
 
     if not Investor.select().where(Investor.get_gift, Investor.chat_id == str(call.from_user.id)):
         await asyncio.sleep(3)
